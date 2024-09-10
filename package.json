@@ -4,6 +4,9 @@
   "version": "0.0.1",
   "type": "module",
   "main": "./dist/index.js",
+  "author": {
+    "name": "Benjamín Vicente"
+  },
   "license": "MIT",
   "files": [
     "dist"
