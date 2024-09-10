@@ -69,28 +69,42 @@ function Name() {
 Making complex state in React is hard. State is attached to the component tree, and it's difficult to model complex and shared state between components.
 Hooks like `useState` and `useContext` are great, but have a mental model that is hard (or tedious) to scale.
 
-That why many state solutions exist for React, like [Redux](https://redux-toolkit.js.org/), [Tanstack](https://tanstack.com/query), [Jotai](https://jotai.org/) and [Zuztand](https://zustand.docs.pmnd.rs/getting-started/introduction) exists.
-And also why similar alternatives or compilers exist, like [Preact](https://github.com/preactjs), [SolidJS](https://www.solidjs.com/) and [Million.js](https://million.js.org/). It's a fundamental problem in a great ecosystem.
+That why many state solutions exist for React, like [Redux](https://redux-toolkit.js.org/), [Tanstack](https://tanstack.com/query), [Jotai](https://jotai.org/) and [Zuztand](https://zustand.docs.pmnd.rs/getting-started/introduction).
+or even similar alternatives or compilers, like [Preact](https://github.com/preactjs) and [Million.js](https://million.js.org/). It's a _fundamental_ problem in a **great** ecosystem.
 
 Event thought the great advances in developer experience, there is space to improve.
-The idea of this library, at the current state, is to explore different patterns that seems to be more unexplored in the React ecosystem.
+The idea of this library, at the current state, is to explore different patterns that seems to be more unexplored, using Signals and ideas from [SolidJS](https://www.solidjs.com/).
 
 ## Capabilities
 
 [See the example code](src/demo/App.tsx).
 
-- **Great composition**: Signals are already composable. To help composing signals on the component tree, like from `A` to `B`, use `storeA.useStore()` inside `createSignalStore` of `B` to get the same object returned at crating `A` store.
-- **Smart subscription**: Instead of a selection like pattern
+- **Smart subscriptions**: Instead of a selection like pattern, like:
   ```ts
-  const stateA = useStore((state) => state.A);
+  const stateA = useStore((state) => state.a);
   ```
   This library tracks automatically witch signal is accessed and subscribe to it, using a proxy.
   ```ts
   function WillOnlyRunOnAChange() {
     const $ = useSignalState({ a: signal(1), b: signal(2) });
-    console.log($.A);
+    console.log($.a); // Will only run when $.a changes.
   }
   ```
+- **Great composition**: Signals are already composable.
+  This library also allows to compose via context.
+
+  ```ts
+  const storeA = createSignalStore(() => {
+    const a = signal(1);
+    return { $: { a } };
+  });
+  const storeB = createSignalStore(() => {
+    const { a } = storeA.useStore();
+    const b = computed(() => a.value + 1);
+    return { $: { b } };
+  });
+  ```
+
 - Incredible small.
 - Supports SSR. Doesn't need hydration helpers, it just works.
 - Does not require any code transformation.
@@ -98,5 +112,6 @@ The idea of this library, at the current state, is to explore different patterns
 ## Notes and remaining things to explore
 
 - Should this library use `@preact/signals-core`? Is there another signal library that is better?
-- This readme probably should be rewritten soon™.
+- This readme probably should be rewritten.
 - Ths `useStore` inside `createSignalStore` is weird. But is it ilegal? See if React's `use` is more appropriate.
+- Tracking with effects is _hacky_. An implementation with an API like `Watcher` in the [Signal Proposal](https://github.com/tc39/proposal-signals?tab=readme-ov-file#api-sketch) might be preferable.
