@@ -1,5 +1,5 @@
 import { effect } from "@preact/signals-core";
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import type { Signal } from "./signals";
 
 type ExtractSignal<T> = T extends Signal<infer U> ? U : never;
@@ -10,14 +10,14 @@ export function useSignalState<R extends Record<string, Signal>>(signals: R): Un
 
   const [_, triggerRerender] = useState(Symbol());
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     let track = false;
     return effect(() => {
       for (const s of signalsToListen) s.value;
       if (track) triggerRerender(Symbol());
       else track = true;
     });
-  }, [signalsToListen]);
+  });
 
   return new Proxy({} as UnwrapSignals<R>, {
     get(_, key) {
